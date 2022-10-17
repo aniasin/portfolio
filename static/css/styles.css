@@ -15,6 +15,10 @@ h1, h2{
   line-height: 1;
   margin: 0;
 }
+h2{
+  margin: auto auto 20px 100px;
+  text-align: left;
+}
 h3{
   color:#06283D;
   font-family: 'poppins', sans-serif;
@@ -67,6 +71,7 @@ p{
 .title{
   background-color: #06283d;
   display: inline-block;
+  margin: auto auto 20px 100px;
   position: relative;
   bottom: 40px;
 }
