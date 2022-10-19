@@ -123,15 +123,16 @@ def home():
     if last_post:
         header_posts = [
             category.parent_posts[0] for category in BlogCategory.query.all()
-            if category is not last_post.category and len(category.parent_posts > 0)]
+            if category is not last_post.category and category.parent_posts]
     return render_template("index.html", last_post=last_post, user_id=utils.get_user_id(current_user), title="Welcome!",
                            header_posts=header_posts)
 
 
 @app.route('/blog')
 def blog():
-    tags = Tag.query.all()
-    return render_template("blog.html", user_id=utils.get_user_id(current_user), title="Blog categories", tags=tags)
+    categories = BlogCategory.query.all()
+    return render_template("blog.html", user_id=utils.get_user_id(current_user), title="Blog categories",
+                           categories=categories)
 
 
 @app.route("/new-post", methods=["POST", "GET"])

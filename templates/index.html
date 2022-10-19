@@ -11,41 +11,41 @@
             <img class="rounded-circle m-1" src="{{ last_post.category.img_url }}" alt="Generic placeholder image">
           </div>
           <div class="col-lg-8 p-3">
-            <h2 >{{ last_post.title }}</h2>
+            <h2 ><a class="nav-link" href="#">{{ last_post.title }}</a></h2>
             <p>{{ last_post.subtitle }}</p>
-            <h3>Category: {{ last_post.category.name }}</h3>
+            <h4>Category: <a class="nav-link" href="">{{ last_post.category.name }}</a></h4>
+            <a href=""><img src="{{ last_post.img_url }}" class="img-title" alt="..."></a>
+            <p><a class="btn btn-outline" href="#" role="button">Read &raquo;</a></p>
             <h6>Tags:
-              {% for tag in last_post.tags %}
-              {{ tag.name }}
-              {% endfor %}
-            </h6>
-            <img src="{{ last_post.img_url }}" class="img-fluid mx-auto d-block" alt="...">
-            <p><a class="btn btn-outline" href="#" role="button">View details &raquo;</a></p>
-          </div>
+            {% for tag in last_post.tags %}
+            <a class="nav-link" href="">{{ tag.name }}</a>
+            {% endfor %}
+          </h6>
           {% endif %}
+          </div>
         </div>
             <div class="spacer">
               <hr>
             </div>
-                <div class=row>
+        {% for post in header_posts %}
+        <div class=row>
           <div class="col-lg-2 text-center">
-            {% for post in header_posts %}
             <img class="rounded-circle m-1" src="{{ post.category.img_url }}" alt="Generic placeholder image">
           </div>
           <div class="col-lg-8 p-3">
-            <h2 >{{ post.title }}</h2>
-            <h3>Category: {{ post.category.name }}</h3>
+            <h1 ><a class="nav-link" href="#">{{ post.title }}</a></h1>
+            <p>{{ post.subtitle }}</p>
+            <h4>Category: <a class="nav-link" href="">{{ post.category.name }}</a></h4>
+            <a href=""><img src="{{ post.img_url }}" class="img-title" alt="..."></a>
+            <p><a class="btn btn-outline" href="#" role="button">Read &raquo;</a></p>
             <h6>Tags:
               {% for tag in post.tags %}
-              {{ tag.name }}
+            <a class="nav-link" href="">{{ tag.name }}</a>
               {% endfor %}
             </h6>
-            <p>{{ post.subtitle }}</p>
-            <img src="{{ post.img_url }}" class="img-fluid mx-auto d-block" alt="...">
-            <p><a class="btn btn-outline" href="#" role="button">View details &raquo;</a></p>
           </div>
-          {% endfor %}
         </div>
+        {% endfor %}
       </div>
     </main>
 {% include "footer.html" %}
