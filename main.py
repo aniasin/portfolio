@@ -14,7 +14,7 @@ from gevent.pywsgi import WSGIServer
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from forms import RegisterForm, LoginForm, CreatePostForm
+from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm
 import utils
 
 
@@ -118,9 +118,12 @@ def load_user(user_id):
 # -------- Routes ---------
 @app.route('/')
 def home():
+    header_posts = []
     last_post = db.session.query(BlogPost).order_by(BlogPost.id.desc()).first()
-    header_posts = [
-        category.parent_posts[0] for category in BlogCategory.query.all() if category is not last_post.category]
+    if last_post:
+        header_posts = [
+            category.parent_posts[0] for category in BlogCategory.query.all()
+            if category is not last_post.category and len(category.parent_posts > 0)]
     return render_template("index.html", last_post=last_post, user_id=utils.get_user_id(current_user), title="Welcome!",
                            header_posts=header_posts)
 
@@ -156,6 +159,22 @@ def add_new_post():
         db.session.commit()
         return redirect(url_for("home"))
     return render_template("make-post.html", form=form, user_id=utils.get_user_id(current_user), title="New Post")
+
+
+@app.route("/make-category", methods=["POST", "GET"])
+@admin_only
+def add_category():
+    form = CreateCategoryForm()
+    if form.validate_on_submit():
+        new_category = BlogCategory(name=form.name.data,
+                                    description=form.description.data,
+                                    img_url=form.img_url.data,
+                                    )
+        db.session.add(new_category)
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("make-category.html", user_id=utils.get_user_id(current_user),
+                           form=form, title="New Category")
 
 
 @app.route('/register.html', methods=["GET", "POST"])
@@ -199,31 +218,8 @@ def logout():
     return redirect(url_for('home'))
 
 
-def create_db():
-    user_admin = User()
-    user_admin.email = "pierrat.laurent@gmail.com"
-    user_admin.password = generate_password_hash("1234", salt_length=8)
-    user_admin.name = "sillikone"
-    db.session.add(user_admin)
-
-    user = User()
-    user.email = "user@gmail.com"
-    user.password = generate_password_hash("1234", salt_length=8)
-    user.name = "Jack"
-    db.session.add(user)
-
-    default_category = BlogCategory(name="default",
-                                    description="This is the default category.",
-                                    img_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTeEOrcFPwwpppZnVJ_hyciaG81XJyxqOUEA&usqp=CAU",
-                                    )
-    db.session.add(default_category)
-    db.session.commit()
-
-
-# with app.app_context():
-#     db.create_all()
-#     create_db()
-
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)

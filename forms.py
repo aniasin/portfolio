@@ -26,3 +26,9 @@ class CreatePostForm(FlaskForm):
     body = CKEditorField("Blog Content", validators=[DataRequired()])
     submit = SubmitField("Submit Post")
 
+
+class CreateCategoryForm(FlaskForm):
+    name = StringField("Category Name", validators=[DataRequired()])
+    description = StringField("Description", validators=[DataRequired()])
+    img_url = StringField("Image URL", validators=[DataRequired(), URL()])
+    submit = SubmitField("Create Category")
