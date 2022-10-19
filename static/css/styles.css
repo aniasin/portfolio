@@ -44,6 +44,7 @@ p{
   outline-color: #06283d;
   color: #EB8632;
   padding: 10px;
+  margin: 10px;
 }
 .btn-outline:hover{
   background-color: #256d85;

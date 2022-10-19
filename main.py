@@ -17,6 +17,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from forms import RegisterForm, LoginForm, CreatePostForm
 import utils
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 ckeditor = CKEditor(app)
@@ -65,8 +66,19 @@ class BlogPost(db.Model):
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("blog_categories.id"))
+    category = relationship("BlogCategory", back_populates="parent_posts")
     tags = db.relationship("Tag", secondary=tag_link)
     comments = relationship("Comment", back_populates="parent_post")
+
+
+class BlogCategory(db.Model):
+    __tablename__ = "blog_categories"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    img_url = db.Column(db.String(250), nullable=True)
+    parent_posts = db.relationship("BlogPost", back_populates="category")
 
 
 class Tag(db.Model):
@@ -106,19 +118,25 @@ def load_user(user_id):
 # -------- Routes ---------
 @app.route('/')
 def home():
-    posts = BlogPost.query.all()
-    return render_template("index.html", posts=posts, user_id=utils.get_user_id(current_user), title="Welcome!")
+    last_post = db.session.query(BlogPost).order_by(BlogPost.id.desc()).first()
+    header_posts = [
+        category.parent_posts[0] for category in BlogCategory.query.all() if category is not last_post.category]
+    return render_template("index.html", last_post=last_post, user_id=utils.get_user_id(current_user), title="Welcome!",
+                           header_posts=header_posts)
 
 
 @app.route('/blog')
 def blog():
-    return render_template("blog.html", user_id=utils.get_user_id(current_user), title="Blog categories")
+    tags = Tag.query.all()
+    return render_template("blog.html", user_id=utils.get_user_id(current_user), title="Blog categories", tags=tags)
 
 
 @app.route("/new-post", methods=["POST", "GET"])
 @admin_only
 def add_new_post():
+    categories = [(category.id, category.name) for category in BlogCategory.query.all()]
     form = CreatePostForm()
+    form.category.choices = categories
     if form.validate_on_submit():
         new_post = BlogPost(
             title=form.title.data,
@@ -126,6 +144,7 @@ def add_new_post():
             body=form.body.data,
             img_url=form.img_url.data,
             author=current_user,
+            category_id=form.category.data,
             date=date.today().strftime("%B %d, %Y")
         )
         tags = form.tags.data.split()
@@ -181,24 +200,30 @@ def logout():
 
 
 def create_db():
-    user = User()
-    user.email = "pierrat.laurent@gmail.com"
-    user.password = generate_password_hash("1234", salt_length=8)
-    user.name = "sillikone"
-    db.session.add(user)
-    db.session.commit()
+    user_admin = User()
+    user_admin.email = "pierrat.laurent@gmail.com"
+    user_admin.password = generate_password_hash("1234", salt_length=8)
+    user_admin.name = "sillikone"
+    db.session.add(user_admin)
 
     user = User()
     user.email = "user@gmail.com"
     user.password = generate_password_hash("1234", salt_length=8)
     user.name = "Jack"
     db.session.add(user)
+
+    default_category = BlogCategory(name="default",
+                                    description="This is the default category.",
+                                    img_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTeEOrcFPwwpppZnVJ_hyciaG81XJyxqOUEA&usqp=CAU",
+                                    )
+    db.session.add(default_category)
     db.session.commit()
 
 
 # with app.app_context():
 #     db.create_all()
 #     create_db()
+
 
 if __name__ == "__main__":
     app.run(debug=True)

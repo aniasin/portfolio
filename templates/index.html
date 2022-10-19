@@ -4,23 +4,49 @@
       <hr>
     </div>
     <main role="main">
-      {% for post in posts[:-4:-1]: %}
       <div class="container-fluid">
         <div class=row>
           <div class="col-lg-2 text-center">
-            <img class="rounded-circle m-1" src="{{ post.img_url }}" alt="Generic placeholder image">
+            {% if last_post %}
+            <img class="rounded-circle m-1" src="{{ last_post.category.img_url }}" alt="Generic placeholder image">
+          </div>
+          <div class="col-lg-8 p-3">
+            <h2 >{{ last_post.title }}</h2>
+            <p>{{ last_post.subtitle }}</p>
+            <h3>Category: {{ last_post.category.name }}</h3>
+            <h6>Tags:
+              {% for tag in last_post.tags %}
+              {{ tag.name }}
+              {% endfor %}
+            </h6>
+            <img src="{{ last_post.img_url }}" class="img-fluid mx-auto d-block" alt="...">
+            <p><a class="btn btn-outline" href="#" role="button">View details &raquo;</a></p>
+          </div>
+          {% endif %}
+        </div>
+            <div class="spacer">
+              <hr>
+            </div>
+                <div class=row>
+          <div class="col-lg-2 text-center">
+            {% for post in header_posts %}
+            <img class="rounded-circle m-1" src="{{ post.category.img_url }}" alt="Generic placeholder image">
           </div>
           <div class="col-lg-8 p-3">
             <h2 >{{ post.title }}</h2>
+            <h3>Category: {{ post.category.name }}</h3>
+            <h6>Tags:
+              {% for tag in post.tags %}
+              {{ tag.name }}
+              {% endfor %}
+            </h6>
             <p>{{ post.subtitle }}</p>
-            {% for tag in post.tags: %}
-            <p>{{ tag.name }}</p>
-            {% endfor %}
-            <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p>
+            <img src="{{ post.img_url }}" class="img-fluid mx-auto d-block" alt="...">
+            <p><a class="btn btn-outline" href="#" role="button">View details &raquo;</a></p>
           </div>
+          {% endfor %}
         </div>
       </div>
-      {% endfor %}
     </main>
 {% include "footer.html" %}
 

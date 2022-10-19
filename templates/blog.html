@@ -4,6 +4,19 @@
       <hr>
     </div>
     <main role="main">
-
+      {% for tag in tags: %}
+      <div class="container-fluid">
+        <div class=row>
+          <div class="col-lg-2 text-center">
+            <img class="rounded-circle m-1" src="{{ tag.img_url }}" alt="Generic placeholder image">
+          </div>
+          <div class="col-lg-8 p-3">
+            <h2 >{{ tag.name }}</h2>
+            <p>{{ tag.description }}</p>
+            <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </main>
 {% include "footer.html" %}
