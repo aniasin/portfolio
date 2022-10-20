@@ -71,8 +71,13 @@ p{
   bottom: 40px;
 }
 .subtitle{
-  font-size: 1.3rem;
-  margin: 0;
+  font-size: 0.8rem;
+  margin: 0 50px 0 0;
+}
+@media only screen and (min-width:600px){
+  .subtitle{
+    margin: 0 300px 0 0;
+  }
 }
 .logo{
   background-color: #06283d;

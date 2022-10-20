@@ -1,4 +1,3 @@
-import datetime
 import os
 from datetime import date
 from functools import wraps
@@ -129,10 +128,24 @@ def home():
 
 
 @app.route('/blog')
-def blog():
+def blog_categories():
     categories = BlogCategory.query.all()
-    return render_template("blog.html", user_id=utils.get_user_id(current_user), title="Blog categories",
+    return render_template("blog_categories.html", user_id=utils.get_user_id(current_user), title="Blog categories",
                            categories=categories)
+
+
+@app.route("/post/<int:index>", methods=["POST", "GET"])
+def show_post(index):
+    post = BlogPost.query.get(index)
+    return render_template("post.html", post=post, logged_in=current_user.is_authenticated,
+                           user_id=utils.get_user_id(current_user))
+
+
+@app.route("/category/<int:index>", methods=["POST", "GET"])
+def show_category(index):
+    category = BlogCategory.query.get(index)
+    return render_template("category.html", category=category, logged_in=current_user.is_authenticated,
+                           user_id=utils.get_user_id(current_user))
 
 
 @app.route("/new-post", methods=["POST", "GET"])
@@ -160,6 +173,42 @@ def add_new_post():
         db.session.commit()
         return redirect(url_for("home"))
     return render_template("make-post.html", form=form, user_id=utils.get_user_id(current_user), title="New Post")
+
+
+@app.route("/edit-post/<int:index>", methods=["GET", "POST"])
+@admin_only
+def edit_post(index):
+    post = BlogPost.query.get(index)
+    categories = [(category.id, category.name) for category in BlogCategory.query.all()]
+    new_tags = ""
+    for tag in post.tags:
+        new_tags += f"{tag.name} "
+    edit_form = CreatePostForm(
+        title=post.title,
+        subtitle=post.subtitle,
+        img_url=post.img_url,
+        tags=new_tags,
+        author=post.author,
+        body=post.body
+    )
+    edit_form.category.choices = categories
+    if edit_form.validate_on_submit():
+        post.title = edit_form.title.data
+        post.subtitle = edit_form.subtitle.data
+        post.img_url = edit_form.img_url.data
+        post.category_id = edit_form.category.data
+        post.body = edit_form.body.data
+        tags = edit_form.tags.data.split()
+        post.tags = []
+        for tag in tags:
+            new_tag = Tag(name=tag)
+            db.session.add(new_tag)
+            post.tags.append(new_tag)
+        db.session.commit()
+        return redirect(url_for("show_post", post=post, index=post.id, logged_in=current_user.is_authenticated,
+                                user_id=utils.get_user_id(current_user)))
+    return render_template("make-post.html", form=edit_form, logged_in=current_user.is_authenticated,
+                           user_id=utils.get_user_id(current_user))
 
 
 @app.route("/make-category", methods=["POST", "GET"])
@@ -219,8 +268,8 @@ def logout():
     return redirect(url_for('home'))
 
 
-with app.app_context():
-    db.create_all()
+# with app.app_context():
+#     db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)
