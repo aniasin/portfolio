@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, EmailField, SelectField
+from wtforms import StringField, SubmitField, PasswordField, EmailField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditorField
 
@@ -31,4 +31,9 @@ class CreateCategoryForm(FlaskForm):
     name = StringField("Category Name", validators=[DataRequired()])
     description = StringField("Description", validators=[DataRequired()])
     img_url = StringField("Image URL", validators=[DataRequired(), URL()])
-    submit = SubmitField("Create Category")
+    submit = SubmitField("Submit Category")
+
+
+class CreateMaximeForm(FlaskForm):
+    text = TextAreaField("Text", validators=[DataRequired()])
+    submit = SubmitField("Submit Maxime")

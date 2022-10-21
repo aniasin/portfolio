@@ -17,7 +17,6 @@
     <div class="spacer">
       <hr>
     </div>
-    <main role="main">
       <div class="container-fluid">
         <div class=row>
           <div class="col-lg-2 text-center">
@@ -25,7 +24,7 @@
             <img class="rounded-circle m-1" src="{{ last_post.category.img_url }}" alt="Generic placeholder image">
           </div>
           <div class="col-lg-8 p-3">
-            <h2 ><a class="nav-link" href="{{ url_for('show_post', index=last_post.id) }}">{{ last_post.title }}</a></h2>
+            <h1 ><a class="nav-link" href="{{ url_for('show_post', index=last_post.id) }}">{{ last_post.title }}</a></h1>
             <p>{{ last_post.subtitle }}</p>
             <h4>Category: <a class="nav-link" href="{{ url_for('show_category', index=last_post.category.id) }}">{{ last_post.category.name }}</a></h4>
             <a href="{{ url_for('show_post', index=last_post.id) }}"><img src="{{ last_post.img_url }}" class="img-title" alt="..."></a>

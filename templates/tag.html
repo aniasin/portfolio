@@ -29,7 +29,7 @@
             <p><a class="btn btn-outline" href="{{ url_for('show_post', index=post.id) }}" role="button">Read &raquo;</a></p>
             <h6>Tags:
               {% for tag in post.tags %}
-            <a class="nav-link" href="">{{ tag.name }}</a>
+            <a class="nav-link" href="{{ url_for('show_tag', index=tag.id) }}">{{ tag.name }}</a>
               {% endfor %}
             </h6>
           </div>

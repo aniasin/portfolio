@@ -20,7 +20,7 @@
                 {% endif %}
                 <h6>Tags:
                   {% for tag in post.tags %}
-                <a class="nav-link" href="">{{ tag.name }}</a>
+                <a class="nav-link" href="{{ url_for('show_tag', index=tag.id) }}">{{ tag.name }}</a>
                   {% endfor %}
                 </h6>
               </div>

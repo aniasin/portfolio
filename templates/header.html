@@ -22,7 +22,7 @@
           <a class="navbar-brand" href="{{ url_for('home') }}"><img src="/static/images/Logo.png" alt=""></a>
           <div class="heading">
 <!--            <h1 class="text-left">{{title}}</h1>-->
-            <p class="subtitle"><em>"L'amour amène à la lumière les qualités sublimes et secrètes de celui qui aime, – ce qu'il possède de rare, d'exceptionnel. C'est pourquoi l'amant trompe facilement sur ce qui est la règle chez lui."</em></p>
+            <h3 class="subtitle"><em>{{ maxime.text }}</em></h3>
           </div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -48,9 +48,12 @@
                 <a class="btn btn-outline text-nowrap btn-sm" href="{{ url_for('logout') }}"><i class="fa-solid fa-xmark menu-icon"></i> Log Out</a>
               </li>
               {% endif %}
-                            {% if user_id == 1 %}
+              {% if user_id == 1 %}
               <li class="nav-item">
                 <a class="btn btn-outline text-nowrap btn-sm" href="{{ url_for('add_new_post') }}"><i class="fa-solid fa-pen-nib menu-icon"></i> New Article</a>
+              </li>
+              <li class="nav-item">
+                <a class="btn btn-outline text-nowrap btn-sm" href="{{ url_for('add_maxime') }}"><i class="fa-solid fa-message menu-icon"></i> Create Maxime</a>
               </li>
               {% endif %}
             </ul>

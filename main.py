@@ -1,6 +1,7 @@
 import os
-from datetime import date
+from datetime import date, datetime
 from functools import wraps
+import random
 
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask import abort
@@ -13,8 +14,7 @@ from gevent.pywsgi import WSGIServer
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm
-import utils
+from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm, CreateMaximeForm
 
 
 app = Flask(__name__)
@@ -97,6 +97,12 @@ class Comment(db.Model):
     date = db.Column(db.String(250), nullable=False)
 
 
+class Maxime(db.Model):
+    __tablename__ = "maximes"
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(250), nullable=False)
+
+
 # Create admin-only decorator
 def admin_only(f):
     @wraps(f)
@@ -114,6 +120,20 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+@app.context_processor
+def inject_now():
+    maximes = Maxime.query.all()
+    if len(maximes) > 0:
+        maxime = random.choice(maximes)
+    else:
+        maxime = Maxime(text="Welcome!")
+    if current_user.is_authenticated:
+        user_id = current_user.id
+    else:
+        user_id = 0
+    return dict(now=datetime.now(), user_id=user_id, maxime=maxime)
+
+
 # -------- Routes ---------
 @app.route('/')
 def home():
@@ -123,37 +143,32 @@ def home():
         header_posts = [
             category.parent_posts[0] for category in BlogCategory.query.all()
             if category is not last_post.category and category.parent_posts]
-    return render_template("index.html", last_post=last_post, user_id=utils.get_user_id(current_user), title="Welcome!",
-                           header_posts=header_posts)
+    return render_template("index.html", last_post=last_post, title="Welcome!", header_posts=header_posts)
 
 
 @app.route('/blog')
 def blog_categories():
     categories = BlogCategory.query.all()
-    return render_template("blog_categories.html", user_id=utils.get_user_id(current_user), title="Blog categories",
-                           categories=categories)
+    return render_template("blog_categories.html", title="Blog categories", categories=categories)
 
 
 @app.route("/post/<int:index>")
 def show_post(index):
     post = BlogPost.query.get(index)
-    return render_template("post.html", post=post, logged_in=current_user.is_authenticated,
-                           user_id=utils.get_user_id(current_user))
+    return render_template("post.html", post=post, logged_in=current_user.is_authenticated)
 
 
 @app.route("/category/<int:index>")
 def show_category(index):
     category = BlogCategory.query.get(index)
-    return render_template("category.html", category=category, logged_in=current_user.is_authenticated,
-                           user_id=utils.get_user_id(current_user))
+    return render_template("category.html", category=category)
 
 
 @app.route("/tag/<int:index>")
 def show_tag(index):
     tag = Tag.query.get(index)
     posts = tag.entries.all()
-    return render_template("tag.html", tag=tag, logged_in=current_user.is_authenticated, posts=posts,
-                           user_id=utils.get_user_id(current_user))
+    return render_template("tag.html", tag=tag, logged_in=current_user.is_authenticated, posts=posts)
 
 
 @app.route("/new-post", methods=["POST", "GET"])
@@ -183,7 +198,7 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("home"))
-    return render_template("make-post.html", form=form, user_id=utils.get_user_id(current_user), title="New Post")
+    return render_template("make-post.html", form=form, title="New Post")
 
 
 @app.route("/edit-post/<int:index>", methods=["GET", "POST"])
@@ -219,10 +234,8 @@ def edit_post(index):
             db.session.add(new_tag)
             post.tags.append(new_tag)
         db.session.commit()
-        return redirect(url_for("show_post", post=post, index=post.id, logged_in=current_user.is_authenticated,
-                                user_id=utils.get_user_id(current_user)))
-    return render_template("make-post.html", form=edit_form, logged_in=current_user.is_authenticated,
-                           user_id=utils.get_user_id(current_user))
+        return redirect(url_for("show_post", post=post, index=post.id))
+    return render_template("make-post.html", form=edit_form)
 
 
 @app.route("/make-category", methods=["POST", "GET"])
@@ -237,8 +250,35 @@ def add_category():
         db.session.add(new_category)
         db.session.commit()
         return redirect(url_for("home"))
-    return render_template("make-category.html", user_id=utils.get_user_id(current_user),
-                           form=form, title="New Category")
+    return render_template("make-category.html", form=form, title="New Category")
+
+
+@app.route("/edit_category/<int:index>", methods=["GET", "POST"])
+@admin_only
+def edit_category(index):
+    category = BlogCategory.query.get(index)
+    form = CreateCategoryForm(name=category.name,
+                              description=category.description,
+                              img_url=category.img_url,
+                              )
+    if form.validate_on_submit():
+        category.name = form.name.data
+        category.description = form.description.data
+        category.img_url = form.img_url.data
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("make-category.html", form=form, title="Edit Category")
+
+
+@app.route("/make-maxime", methods=["GET", "POST"])
+def add_maxime():
+    form = CreateMaximeForm()
+    if form.validate_on_submit():
+        new_maxime = Maxime(text=form.text.data)
+        db.session.add(new_maxime)
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("make-maxime.html", form=form, title="Create Maxime")
 
 
 @app.route('/register.html', methods=["GET", "POST"])
@@ -258,7 +298,7 @@ def register():
             return redirect(url_for('home'))
         else:
             flash("User already exists.")
-    return render_template("register.html", form=form, user_id=utils.get_user_id(current_user), title="Register")
+    return render_template("register.html", form=form, title="Register")
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -273,7 +313,7 @@ def login():
             return redirect(url_for('home'))
         else:
             flash("Invalid password or username")
-    return render_template("login.html", form=form, user_id=utils.get_user_id(current_user), title="Login")
+    return render_template("login.html", form=form, title="Login")
 
 
 @app.route('/logout')

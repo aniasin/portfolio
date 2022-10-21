@@ -16,16 +16,16 @@ h1, h2{
   margin: 0;
 }
 h2{
-  margin: auto auto 10px 10px;
-  text-align: left;
-}
-h3{
   color:#06283D;
   font-family: 'poppins', sans-serif;
   font-size: 1.6rem;
   line-height: 1;
   margin: auto auto 20px 10px;
   text-align: left;
+}
+h3{
+  color: #256d85;
+  font-size: 1rem;
 }
 h4, h5, h6{
   font-family: 'poppins', sans-serif;
@@ -71,7 +71,8 @@ p{
   bottom: 40px;
 }
 .subtitle{
-  font-size: 0.8rem;
+  font-size: 1rem;
+  color: #256d85;
   margin: 0 50px 0 0;
 }
 @media only screen and (min-width:600px){
