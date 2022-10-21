@@ -1,0 +1,41 @@
+{% include "header.html" %}
+  <body>
+    <div class="spacer">
+      <hr>
+    </div>
+    <main role="main">
+      <div class="container-fluid">
+        <div class=row>
+          <div class="col-lg-2 text-center">
+          </div>
+          <div class="col-lg-8 p-3">
+            <h1 >{{ tag.name }}</h1>
+          </div>
+        </div>
+      </div>
+
+      <div class="spacer">
+        <hr>
+      </div>
+        {% for post in posts %}
+        <div class=row>
+          <div class="col-lg-2 text-center">
+          </div>
+          <div class="col-lg-8 p-3">
+            <h1 ><a class="nav-link" href="{{ url_for('show_post', index=post.id) }}">{{ post.title }}</a></h1>
+            <p>{{ post.subtitle }}</p>
+            <h4>Category: <a class="nav-link" href="">{{ post.category.name }}</a></h4>
+            <a href="{{ url_for('show_post', index=post.id) }}"><img src="{{ post.img_url }}" class="img-title" alt="..."></a>
+            <p><a class="btn btn-outline" href="{{ url_for('show_post', index=post.id) }}" role="button">Read &raquo;</a></p>
+            <h6>Tags:
+              {% for tag in post.tags %}
+            <a class="nav-link" href="">{{ tag.name }}</a>
+              {% endfor %}
+            </h6>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      </div>
+    </main>
+{% include "footer.html" %}

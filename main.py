@@ -67,7 +67,7 @@ class BlogPost(db.Model):
     img_url = db.Column(db.String(250), nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey("blog_categories.id"))
     category = relationship("BlogCategory", back_populates="parent_posts")
-    tags = db.relationship("Tag", secondary=tag_link)
+    tags = db.relationship("Tag", secondary=tag_link, backref=db.backref('entries', lazy='dynamic'))
     comments = relationship("Comment", back_populates="parent_post")
 
 
@@ -134,17 +134,25 @@ def blog_categories():
                            categories=categories)
 
 
-@app.route("/post/<int:index>", methods=["POST", "GET"])
+@app.route("/post/<int:index>")
 def show_post(index):
     post = BlogPost.query.get(index)
     return render_template("post.html", post=post, logged_in=current_user.is_authenticated,
                            user_id=utils.get_user_id(current_user))
 
 
-@app.route("/category/<int:index>", methods=["POST", "GET"])
+@app.route("/category/<int:index>")
 def show_category(index):
     category = BlogCategory.query.get(index)
     return render_template("category.html", category=category, logged_in=current_user.is_authenticated,
+                           user_id=utils.get_user_id(current_user))
+
+
+@app.route("/tag/<int:index>")
+def show_tag(index):
+    tag = Tag.query.get(index)
+    posts = tag.entries.all()
+    return render_template("tag.html", tag=tag, logged_in=current_user.is_authenticated, posts=posts,
                            user_id=utils.get_user_id(current_user))
 
 
@@ -166,7 +174,10 @@ def add_new_post():
         )
         tags = form.tags.data.split()
         for tag in tags:
-            new_tag = Tag(name=tag)
+            if Tag.query.filter_by(id=tag).first():
+                new_tag = Tag.query.filter_by(name=tag).first()
+            else:
+                new_tag = Tag(name=tag)
             db.session.add(new_tag)
             new_post.tags.append(new_tag)
         db.session.add(new_post)
@@ -188,6 +199,7 @@ def edit_post(index):
         subtitle=post.subtitle,
         img_url=post.img_url,
         tags=new_tags,
+        category=post.category_id,
         author=post.author,
         body=post.body
     )
@@ -199,9 +211,11 @@ def edit_post(index):
         post.category_id = edit_form.category.data
         post.body = edit_form.body.data
         tags = edit_form.tags.data.split()
-        post.tags = []
         for tag in tags:
-            new_tag = Tag(name=tag)
+            if Tag.query.filter_by(name=tag).first():
+                new_tag = Tag.query.filter_by(name=tag).first()
+            else:
+                new_tag = Tag(name=tag)
             db.session.add(new_tag)
             post.tags.append(new_tag)
         db.session.commit()
@@ -268,8 +282,8 @@ def logout():
     return redirect(url_for('home'))
 
 
-# with app.app_context():
-#     db.create_all()
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)
