@@ -1,3 +1,4 @@
+
 body{
   background-color: #256d85;
   font-family: 'Barlow Condensed', sans-serif;
@@ -36,7 +37,7 @@ h4, h5, h6{
 p{
   color:#06283D;
   font-family: 'poppins', sans-serif;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   margin: auto auto 20px 10px;
   text-align: left;
 }
@@ -57,12 +58,24 @@ p{
 .navbar-collapse{
   padding: 20px;
 }
-.nav-link, .nav-link:visited{
-    color: ##EB8632;
+a, a:visited, .nav-link, .nav-link:visited, link-primary{
+    color: #EB8632;
 }
 .nav-link:hover{
     color: #EBDE5D;
 }
+ul.nav li a, ul.nav li a:visited {
+    color: ##EB8632 !important;
+}
+
+ul.nav li a:hover, ul.nav li a:hover {
+    color: #EBDE5D !important;
+}
+
+ul.nav li.active a {
+    color: #EBDE5D !important;
+}
+
 .title{
   background-color: #06283d;
   display: inline-block;
@@ -95,6 +108,7 @@ p{
   font-size: 2rem;
 }
 .footer-icon{
+  color: #06283D;
   font-size: 6rem;
   text-align: center;
   padding: 20px;

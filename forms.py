@@ -20,7 +20,7 @@ class LoginForm(FlaskForm):
 class CreatePostForm(FlaskForm):
     title = StringField("Blog Post Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
-    img_url = StringField("Blog Image URL", validators=[DataRequired(), URL()])
+    img_url = StringField("Blog Image URL")
     category = SelectField("Category", choices=[])
     tags = StringField("Tags")
     body = CKEditorField("Blog Content", validators=[DataRequired()])

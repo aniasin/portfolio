@@ -9,8 +9,9 @@
           <div class="col-lg-2 text-center">
           </div>
           <div class="col-lg-8 p-3">
-            <h1 >Some Title</h1>
-            <p>Some text</p>
+            <h1 >{{ title }}</h1>
+            <h6>This entire website has been designed by Sillikone.<br>Tools: Python, Flask, Flask-SQLAlchemy, Flask-WTF,
+              Bootstrap.<br>Languages: Python, HTML, CSS.<br>The source code can be found on my <a href="https://github.com/aniasin">GitHub</a> page.</h6>
           </div>
         </div>
       </div>
@@ -27,7 +28,9 @@
             <h1 ><a class="nav-link" href="{{ url_for('show_post', index=last_post.id) }}">{{ last_post.title }}</a></h1>
             <p>{{ last_post.subtitle }}</p>
             <h4>Category: <a class="nav-link" href="{{ url_for('show_category', index=last_post.category.id) }}">{{ last_post.category.name }}</a></h4>
+            {% if last_post.img_url %}
             <a href="{{ url_for('show_post', index=last_post.id) }}"><img src="{{ last_post.img_url }}" class="img-title" alt="..."></a>
+            {% endif %}
             <p><a class="btn btn-outline" href="{{ url_for('show_post', index=last_post.id) }}" role="button">Read &raquo;</a></p>
             <h6>Tags:
             {% for tag in last_post.tags %}
@@ -49,7 +52,9 @@
             <h1 ><a class="nav-link" href="{{ url_for('show_post', index=post.id) }}">{{ post.title }}</a></h1>
             <p>{{ post.subtitle }}</p>
             <h4>Category: <a class="nav-link" href="{{ url_for('show_category', index=post.category.id) }}">{{ post.category.name }}</a></h4>
+            {% if post.img_url %}
             <a href="{{ url_for('show_post', index=post.id) }}"><img src="{{ post.img_url }}" class="img-title" alt="..."></a>
+            {% endif %}
             <p><a class="btn btn-outline" href="{{ url_for('show_post', index=post.id) }}" role="button">Read &raquo;</a></p>
             <h6>Tags:
               {% for tag in post.tags %}

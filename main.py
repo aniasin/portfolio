@@ -188,12 +188,13 @@ def add_new_post():
             date=date.today().strftime("%B %d, %Y")
         )
         tags = form.tags.data.split()
+        new_post.tags = []
         for tag in tags:
-            if Tag.query.filter_by(id=tag).first():
+            if Tag.query.filter_by(name=tag).first():
                 new_tag = Tag.query.filter_by(name=tag).first()
             else:
                 new_tag = Tag(name=tag)
-            db.session.add(new_tag)
+                db.session.add(new_tag)
             new_post.tags.append(new_tag)
         db.session.add(new_post)
         db.session.commit()
@@ -226,13 +227,15 @@ def edit_post(index):
         post.category_id = edit_form.category.data
         post.body = edit_form.body.data
         tags = edit_form.tags.data.split()
+        post.tags = []
         for tag in tags:
             if Tag.query.filter_by(name=tag).first():
                 new_tag = Tag.query.filter_by(name=tag).first()
             else:
                 new_tag = Tag(name=tag)
-            db.session.add(new_tag)
-            post.tags.append(new_tag)
+                db.session.add(new_tag)
+            if post not in Tag.query.filter_by(name=tag).first().entries.all():
+                post.tags.append(new_tag)
         db.session.commit()
         return redirect(url_for("show_post", post=post, index=post.id))
     return render_template("make-post.html", form=edit_form)

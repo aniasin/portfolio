@@ -30,7 +30,9 @@
             <h1 ><a class="nav-link" href="{{ url_for('show_post', index=post.id) }}">{{ post.title }}</a></h1>
             <p>{{ post.subtitle }}</p>
             <h4>Category: <a class="nav-link" href="">{{ post.category.name }}</a></h4>
+            {% if post.img_url %}
             <a href="{{ url_for('show_post', index=post.id) }}"><img src="{{ post.img_url }}" class="img-title" alt="..."></a>
+            {% endif %}
             <p><a class="btn btn-outline" href="{{ url_for('show_post', index=post.id) }}" role="button">Read &raquo;</a></p>
             <h6>Tags:
               {% for tag in post.tags %}
