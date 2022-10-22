@@ -22,7 +22,11 @@
           <a class="navbar-brand" href="{{ url_for('home') }}"><img src="/static/images/Logo.png" alt=""></a>
           <div class="heading">
 <!--            <h1 class="text-left">{{title}}</h1>-->
-            <h3 class="subtitle"><em>{{ maxime.text }}</em></h3>
+            <h3 class="subtitle"><em>{{ maxime.text }}</em>
+              {% if current_user.id == 1 %}
+              <a href="{{ url_for('edit_maxime', index=maxime.id) }}">Edit</a>
+              {% endif %}
+            </h3>
           </div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

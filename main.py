@@ -12,6 +12,7 @@ from flask_login import UserMixin, login_user, LoginManager, current_user, logou
 from flask_sqlalchemy import SQLAlchemy
 from gevent.pywsgi import WSGIServer
 from sqlalchemy.orm import relationship
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm, CreateMaximeForm
@@ -23,9 +24,11 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 # #CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_")
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///portfolio.db" # os.environ.get("DATABASE_")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db = SQLAlchemy()
+db.init_app(app)
+migrate = Migrate(app, db)
 # Init login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -38,6 +41,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    bio = db.Column(db.Text, nullable=True)
 
     # This will act like a List of BlogPost objects attached to each User.
     # The "author" refers to the author property in the BlogPost class.
@@ -274,6 +278,7 @@ def edit_category(index):
 
 
 @app.route("/make-maxime", methods=["GET", "POST"])
+@admin_only
 def add_maxime():
     form = CreateMaximeForm()
     if form.validate_on_submit():
@@ -282,6 +287,18 @@ def add_maxime():
         db.session.commit()
         return redirect(url_for("home"))
     return render_template("make-maxime.html", form=form, title="Create Maxime")
+
+
+@app.route("/edit-maxime/<int:index>", methods=["GET", "POST"])
+@admin_only
+def edit_maxime(index):
+    maxime = Maxime.query.get(index)
+    form = CreateMaximeForm(text=maxime.text)
+    if form.validate_on_submit():
+        maxime.text = form.text.data
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("make-maxime.html", form=form, index=index, title="Edit Maxime")
 
 
 @app.route('/register.html', methods=["GET", "POST"])
@@ -325,10 +342,9 @@ def logout():
     return redirect(url_for('home'))
 
 
-with app.app_context():
-    db.create_all()
-
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
     # http_server = WSGIServer(('127.0.0.1', 5000), app)
     # http_server.serve_forever()
