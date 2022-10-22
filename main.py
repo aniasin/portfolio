@@ -136,6 +136,8 @@ def inject_now():
         maxime = random.choice(maximes)
     else:
         maxime = Maxime(text="Welcome!")
+        db.session.add(maxime)
+        db.session.commit()
     if current_user.is_authenticated:
         user_id = current_user.id
     else:
