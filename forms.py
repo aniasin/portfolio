@@ -37,3 +37,15 @@ class CreateCategoryForm(FlaskForm):
 class CreateMaximeForm(FlaskForm):
     text = TextAreaField("Text", validators=[DataRequired()])
     submit = SubmitField("Submit Maxime")
+
+
+class CommentForm(FlaskForm):
+    body = CKEditorField("Comment")
+    submit = SubmitField("Comment")
+
+
+class ContactForm(FlaskForm):
+    name = StringField("Enter your name...", validators=[DataRequired()])
+    email = EmailField("Enter your email...", validators=[DataRequired()])
+    message = CKEditorField("Message")
+    submit = SubmitField("Send")

@@ -1,4 +1,5 @@
 {% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
   <body>
     <div class="spacer">
       <hr>
@@ -25,7 +26,44 @@
                 <a class="nav-link" href="{{ url_for('show_tag', index=tag.id) }}">{{ tag.name }}</a>
                   {% endfor %}
                 </h6>
+                <ul class="commentList">
+                {% for comment in post.comments[::-1] %}
+                <li>
+                    <div class="row">
+                        <div class="col-2">
+                          <h6><img src="{{ comment.author.email | gravatar }}"> {{ comment.author.name }}</h6>
+                        </div>
+                        <div class="col-10">
+                        </div>
+                    </div>
+                    <div class="commentText">
+                        {{ comment.text|safe }}
+                        {% if user_id == 1 %}
+                        <a href="{{url_for('delete_comment', index=comment.id)}}">Delete</a>
+                        {% endif %}
+                        <h6 class="date sub-text">{{ comment.date }}</h6>
+                    </div>
+                </li>
+                <div class="spacer">
+                    <hr>
+                </div>
+                {% endfor %}
+              </ul>
               </div>
+            <!--           Comments Area -->
+          <div class="col-lg-12 col-md-10 mx-auto comment">
+            <div class="container">
+              <div class="row">
+                  <div class="col-lg-6 col-sm-12">
+                      {{ ckeditor.load() }}
+                      {{ ckeditor.config(name='body') }}
+                      {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "outline"}) }}
+                  </div>
+                  <div class="col-lg-6">
+                  </div>
+                </div>
+              </div>
+          </div>
             </div>
           </div>
         </div>

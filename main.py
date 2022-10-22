@@ -2,6 +2,7 @@ import os
 from datetime import date, datetime
 from functools import wraps
 import random
+import smtplib
 
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask import abort
@@ -15,7 +16,8 @@ from sqlalchemy.orm import relationship
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm, CreateMaximeForm
+from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm, CreateMaximeForm, CommentForm, \
+    ContactForm
 
 
 app = Flask(__name__)
@@ -24,7 +26,7 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 # #CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///portfolio.db" # os.environ.get("DATABASE_")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy()
 db.init_app(app)
@@ -32,6 +34,9 @@ migrate = Migrate(app, db)
 # Init login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+gravatar = Gravatar(app, size=40, rating='x', default='retro', force_default=False, force_lower=False, use_ssl=False,
+                    base_url=None)
 
 
 # #CONFIGURE TABLES
@@ -156,10 +161,24 @@ def blog_categories():
     return render_template("blog_categories.html", title="Blog categories", categories=categories)
 
 
-@app.route("/post/<int:index>")
+@app.route("/post/<int:index>", methods=["POST", "GET"])
 def show_post(index):
     post = BlogPost.query.get(index)
-    return render_template("post.html", post=post, logged_in=current_user.is_authenticated)
+    form = CommentForm()
+    if form.validate_on_submit():
+        if not current_user.is_authenticated:
+            flash("You must be logged in!")
+            return redirect(url_for('login'))
+        comment = Comment(
+            text=form.body.data,
+            author=current_user,
+            parent_post=post,
+            date=date.today().strftime("%B %d, %Y")
+        )
+        db.session.add(comment)
+        db.session.commit()
+        return redirect(url_for("show_post", post=post, index=post.id))
+    return render_template("post.html", post=post, form=form)
 
 
 @app.route("/category/<int:index>")
@@ -172,7 +191,7 @@ def show_category(index):
 def show_tag(index):
     tag = Tag.query.get(index)
     posts = tag.entries.all()
-    return render_template("tag.html", tag=tag, logged_in=current_user.is_authenticated, posts=posts)
+    return render_template("tag.html", tag=tag, posts=posts)
 
 
 @app.route("/new-post", methods=["POST", "GET"])
@@ -204,6 +223,16 @@ def add_new_post():
         db.session.commit()
         return redirect(url_for("home"))
     return render_template("make-post.html", form=form, title="New Post")
+
+
+@app.route("/delete-comment/<int:index>", methods=["GET", "POST"])
+@admin_only
+def delete_comment(index):
+    comment = Comment.query.get(index)
+    post = comment.parent_post
+    db.session.delete(comment)
+    db.session.commit()
+    return redirect(url_for("show_post", index=post.id))
 
 
 @app.route("/edit-post/<int:index>", methods=["GET", "POST"])
@@ -301,6 +330,19 @@ def edit_maxime(index):
     return render_template("make-maxime.html", form=form, index=index, title="Edit Maxime")
 
 
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    form = ContactForm()
+    if form.validate_on_submit():
+        with smtplib.SMTP("smtp.gmail.com", 587) as connexion:
+            connexion.starttls()
+            connexion.login(user=os.environ.get("ADMIN_MAIL"), password=os.environ.get("MAIL_PASS"))
+            connexion.sendmail(from_addr=os.environ.get("ADMIN_MAIL"), to_addrs=form.email.data,
+                               msg=f"subject: from user {form.name.data} \n\n{form.message.data}\n{form.email.data}")
+        return render_template("contact.html", form=form, title="Successfully sent message!")
+    return render_template("contact.html", form=form, title="Contact Me")
+
+
 @app.route('/register.html', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -343,8 +385,8 @@ def logout():
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
-    # http_server = WSGIServer(('127.0.0.1', 5000), app)
-    # http_server.serve_forever()
+    # with app.app_context():
+    #     db.create_all()
+    # app.run(debug=True)
+    http_server = WSGIServer(('127.0.0.1', 5000), app)
+    http_server.serve_forever()
