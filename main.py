@@ -26,7 +26,7 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 # #CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_")
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://glbxaggjfhowyy:1186793fa176ccace4cb4137f07870f9b6a1e0c2dbb8d89a28651fba5229cac4@ec2-54-228-125-183.eu-west-1.compute.amazonaws.com:5432/daoe86epgsfjho"#os.environ.get("DATABASE_")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy()
 db.init_app(app)
@@ -339,8 +339,9 @@ def contact():
         with smtplib.SMTP("smtp.gmail.com", 587) as connexion:
             connexion.starttls()
             connexion.login(user=os.environ.get("ADMIN_MAIL"), password=os.environ.get("MAIL_PASS"))
+            msg = f"subject: from user {form.name.data} \n\n{form.message.data}\n{form.email.data}"
             connexion.sendmail(from_addr=os.environ.get("ADMIN_MAIL"), to_addrs=form.email.data,
-                               msg=f"subject: from user {form.name.data} \n\n{form.message.data}\n{form.email.data}")
+                               msg=msg.encode("utf8"))
         return render_template("contact.html", form=form, title="Successfully sent message!")
     return render_template("contact.html", form=form, title="Contact Me")
 
