@@ -177,8 +177,15 @@ def show_post(index):
             parent_post=post,
             date=date.today().strftime("%B %d, %Y")
         )
+
         db.session.add(comment)
         db.session.commit()
+        with smtplib.SMTP("smtp.gmail.com", 587) as connexion:
+            connexion.starttls()
+            connexion.login(user=os.environ.get("ADMIN_MAIL"), password=os.environ.get("MAIL_PASS"))
+            msg = f"subject: from Blog \n\nComment added.\nPost : https://blog-sillikone.herokuapp.com/post/{post.id}"
+            connexion.sendmail(from_addr=os.environ.get("ADMIN_MAIL"), to_addrs=os.environ.get("ADMIN_MAIL"),
+                               msg=msg.encode("utf8"))
         return redirect(url_for("show_post", post=post, index=post.id))
     return render_template("post.html", post=post, form=form)
 
@@ -340,7 +347,7 @@ def contact():
             connexion.starttls()
             connexion.login(user=os.environ.get("ADMIN_MAIL"), password=os.environ.get("MAIL_PASS"))
             msg = f"subject: from user {form.name.data} \n\n{form.message.data}\n{form.email.data}"
-            connexion.sendmail(from_addr=os.environ.get("ADMIN_MAIL"), to_addrs=form.email.data,
+            connexion.sendmail(from_addr=form.email.data, to_addrs=os.environ.get("ADMIN_MAIL"),
                                msg=msg.encode("utf8"))
         return render_template("contact.html", form=form, title="Successfully sent message!")
     return render_template("contact.html", form=form, title="Contact Me")
