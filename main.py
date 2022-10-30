@@ -4,6 +4,8 @@ from functools import wraps
 import random
 import smtplib
 
+import utils
+
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask import abort
 from flask_bootstrap import Bootstrap
@@ -193,7 +195,11 @@ def show_post(index):
 @app.route("/category/<int:index>")
 def show_category(index):
     category = BlogCategory.query.get(index)
-    return render_template("category.html", category=category)
+    posts = category.parent_posts
+    if category.name == "Nietzsche":
+        posts_title = utils.order_title_alphabetically(posts)
+        posts = [BlogPost.query.filter_by(title=title).first() for title in posts_title]
+    return render_template("category.html", category=category, posts=posts)
 
 
 @app.route("/tag/<int:index>")
