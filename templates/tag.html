@@ -24,7 +24,7 @@
           <div class="col-lg-8 p-3">
             <h1 ><a class="nav-link" href="{{ url_for('show_post', index=post.id) }}">{{ post.title }}</a></h1>
             <p>{{ post.subtitle }}</p>
-            <h4>Category: <a class="nav-link" href="">{{ post.category.name }}</a></h4>
+            <h4>Category: <a class="nav-link" href="{{ url_for('show_category', index=post.category.id) }}">{{ post.category.name }}</a></h4>
             {% if post.img_url %}
             <a href="{{ url_for('show_post', index=post.id) }}"><img src="{{ post.img_url }}" class="img-title" alt="..."></a>
             {% endif %}

@@ -394,6 +394,15 @@ def login():
     return render_template("login.html", form=form, title="Login")
 
 
+@app.route("/profile.html")
+def show_profile():
+    if not current_user.is_authenticated:
+        flash("You must be logged in!")
+        return redirect(url_for('login'))
+    else:
+        return render_template("profile.html", user=current_user, title=current_user.name)
+
+
 @app.route('/logout')
 def logout():
     logout_user()
