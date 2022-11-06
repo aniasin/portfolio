@@ -44,6 +44,14 @@ class CommentForm(FlaskForm):
     submit = SubmitField("Comment")
 
 
+class CreateToDo(FlaskForm):
+    title = StringField("ToDo Title", validators=[DataRequired()])
+    description = StringField("Description", validators=[DataRequired()])
+    priority_id = SelectField("Priority", choices=[(0, "Normal"), (1, "Important"), (2, "Critical")])
+    body = CKEditorField("Body", validators=[DataRequired()])
+    submit = SubmitField("Create To Do")
+
+
 class ContactForm(FlaskForm):
     name = StringField("Enter your name...", validators=[DataRequired()])
     email = EmailField("Enter your email...", validators=[DataRequired()])

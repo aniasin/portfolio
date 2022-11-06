@@ -11,15 +11,15 @@ from flask import abort
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
-from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
-from flask_sqlalchemy import SQLAlchemy
-from gevent.pywsgi import WSGIServer
-from sqlalchemy.orm import relationship
-from flask_migrate import Migrate
+from flask_login import login_user, LoginManager, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import UserMixin
+from sqlalchemy.orm import relationship
 
 from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm, CreateMaximeForm, CommentForm, \
-    ContactForm
+    ContactForm, CreateToDo
 
 
 app = Flask(__name__)
@@ -32,7 +32,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy()
 db.init_app(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 # Init login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -41,7 +41,6 @@ gravatar = Gravatar(app, size=40, rating='x', default='retro', force_default=Fal
                     base_url=None)
 
 
-# #CONFIGURE TABLES
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -54,12 +53,31 @@ class User(UserMixin, db.Model):
     # The "author" refers to the author property in the BlogPost class.
     posts = relationship("BlogPost", back_populates="author")
     comments = relationship("Comment", back_populates="author")
+    todo_items = relationship("ToDo", back_populates="author")
 
 
 tag_link = db.Table("tag_link", db.Model.metadata,
                     db.Column("post_id", db.Integer, db.ForeignKey("blog_posts.id")),
                     db.Column("tag_id", db.Integer, db.ForeignKey("tags.id"))
                     )
+
+
+class ToDo(db.Model):
+    __tablename__ = "todo_list"
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Create Foreign Key, "users.id" the users refers to the table name of User.
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    # Create reference to the User object, the "posts" refers to the posts property in the User class.
+    author = relationship("User", back_populates="todo_items")
+
+    title = db.Column(db.String(250), unique=True, nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    date = db.Column(db.String(250), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    priority = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.Integer, nullable=False)
+    icon = db.Column(db.String(250), nullable=True)
 
 
 class BlogPost(db.Model):
@@ -345,6 +363,34 @@ def edit_maxime(index):
     return render_template("make-maxime.html", form=form, index=index, title="Edit Maxime")
 
 
+@app.route("/new-todo", methods=["POST", "GET"])
+@admin_only
+def add_todo():
+    form = CreateToDo()
+    if form.validate_on_submit():
+        icons = ['<i class="fa-solid fa-square-exclamation"></i>', '<i class="fa-solid fa-diamond-exclamation"></i>',
+                 '<i class="fa-solid fa-triangle-exclamation"></i>']
+        new_todo = ToDo(
+            title=form.title.data,
+            description=form.description.data,
+            body=form.body.data,
+            author=current_user,
+            priority=form.priority_id.data,
+            status=1,
+            icon=icons[int(form.priority_id.data)],
+            date=date.today().strftime("%B %d, %Y")
+        )
+        db.session.add(new_todo)
+        db.session.commit()
+        return redirect(url_for("show_profile"))
+    return render_template("make-todo.html", form=form, title="New ToDo")
+
+
+@app.route('/todo-list')
+def show_todo():
+    return render_template("todo-list.html", title="To Do List", items=current_user.todo_items)
+
+
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     form = ContactForm()
@@ -409,9 +455,10 @@ def logout():
     return redirect(url_for('home'))
 
 
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
     # http_server = WSGIServer(('127.0.0.1', 5000), app)
     # http_server.serve_forever()

@@ -1,0 +1,22 @@
+{% include "header.html" %}
+  <body>
+    <div class="spacer">
+      <hr>
+    </div>
+    <main role="main">
+        {% for item in items %}
+        <div class=row>
+          <div class="col-lg-2 text-center">
+              {{ item.icon | safe}}
+          </div>
+          <div class="col-lg-8 p-3">
+            <h1 ><a class="nav-link" href="">{{ item.title }}</a></h1>
+            <p>{{ item.description }}</p>
+            <h4 class="text-warning">Priority: </h4>
+            <p><a class="btn btn-outline" href="" role="button">Read &raquo;</a></p>
+            <h6>Status: {{ item.status }}</h6>
+          </div>
+        </div>
+        {% endfor %}
+    </main>
+{% include "footer.html" %}
