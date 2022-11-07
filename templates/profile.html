@@ -39,12 +39,20 @@
 
           </div>
           <div class="col-lg-6 text-left">
-            <h2><i class="fa-solid fa-list menu-icon"></i> To Do</h2>
-            <p>Create and view your to-do list</p>
+            <h2><i class="fa-solid fa-list menu-icon"></i> Projects</h2>
+            <p>Create and view your projects</p>
           </div>
           <div class="col-lg-4">
-            <a class="btn btn-outline mt-5" href="{{ url_for('show_todo') }}"><i class="fa-solid fa-list menu-icon"></i> View</a>
-            <a class="btn btn-outline mt-5" href="{{ url_for('add_todo') }}"><i class="fa-solid fa-plus menu-icon"></i> Create</a>
+            <a class="btn btn-outline mt-5" href="{{ url_for('show_todo') }}"><i class="fa-solid fa-list menu-icon"></i> View Projects</a>
+            <a class="btn btn-outline mt-5" href="{{ url_for('add_todo') }}"><i class="fa-solid fa-plus menu-icon"></i> Create Project</a>
+                <button class="btn btn-outline dropdown-toggle mt-5" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   <i class="fa-solid fa-list menu-icon"></i> View Project
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#">Action</a></li>
+                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                </ul>
           </div>
         </div>
       </div>

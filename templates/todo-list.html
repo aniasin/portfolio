@@ -1,22 +1,69 @@
 {% include "header.html" %}
   <body>
+      <main role="main">
     <div class="spacer">
       <hr>
     </div>
-    <main role="main">
-        {% for item in items %}
+    <div class="container-fluid">
         <div class=row>
           <div class="col-lg-2 text-center">
-              {{ item.icon | safe}}
+              <div class="dropdown mt-3">
+                <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   <i class="fa-solid fa-list menu-icon"></i> Switch Project
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#">Action</a></li>
+                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                </ul>
+              </div>
           </div>
-          <div class="col-lg-8 p-3">
-            <h1 ><a class="nav-link" href="">{{ item.title }}</a></h1>
-            <p>{{ item.description }}</p>
-            <h4 class="text-warning">Priority: </h4>
-            <p><a class="btn btn-outline" href="" role="button">Read &raquo;</a></p>
-            <h6>Status: {{ item.status }}</h6>
+          <div class="col-lg-6 p-3">
+            <h1 >Project Title</h1>
+            <p>Project Description</p>
           </div>
+            <div class="col-lg-4 text-left">
+                <a class="btn btn-outline mt-3" href="" role="button"> Close Project</a>
+                <a class="btn btn-outline mt-3" href="{{ url_for('add_todo') }}"> Add Task</a>
+                <a class="btn btn-outline mt-3" href=""> Edit Project</a>
+                <a class="btn btn-outline mt-3" href=""> Delete Project</a>
+            </div>
         </div>
-        {% endfor %}
+    </div>
+    <div class="spacer">
+      <hr>
+    </div>
+      <div class="accordion" id="accordion">
+        {% for item in items %}
+       <div class="container-fluid">
+              <div class=row>
+                <div class="col-lg-2 text-center">
+                </div>
+                  <div class="col-lg-6 p-3">
+                      <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ item.id }}">
+                          <button class="accordion-button accordion-list{{item.priority}}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ item.id }}" aria-expanded="true" aria-controls="collapse{{ item.id }}">
+                            {{ item.icon | safe }} {{ item.title }}
+                          </button>
+                        </h2>
+                        <div id="collapse{{ item.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ item.id }}" data-bs-parent="#accordion">
+                          <div class="accordion-body">
+                            <strong>{{ item.description }}</strong> {{ item.body | safe }}
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                  <div class="col-lg-4 text-left">
+                    <a class="btn btn-outline mt-3" href="" role="button"> Close Task</a>
+                    <a class="btn btn-outline mt-3" href="" role="button"> Edit Task</a>
+                    <a class="btn btn-outline mt-3" href="" role="button"> Delete Task</a>
+                </div>
+                  </div>
+             </div>
+              {% endfor %}
+             </div>
+    <div class="spacer">
+      <hr>
+    </div>
     </main>
 {% include "footer.html" %}
