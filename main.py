@@ -403,13 +403,13 @@ def edit_todo(index):
         title=todo.title,
         description=todo.description,
         body=todo.body,
-        priority=todo.priority,
+        priority_id=todo.priority,
     )
     if edit_form.validate_on_submit():
         todo.title = edit_form.title.data
         todo.description = edit_form.description.data
         todo.body = edit_form.body.data
-        todo.priority_id = edit_form.priority_id.data
+        todo.priority = edit_form.priority_id.data
         db.session.commit()
         return redirect(url_for("show_todo"))
     return render_template("make-todo.html", form=edit_form, title="Edit Task")
