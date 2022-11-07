@@ -144,3 +144,6 @@ ul.nav li.active a {
 .accordion-list2{
     background: #F04D49!important
 }
+.accordion-list-closed{
+    background: #C0C0F0!important
+}

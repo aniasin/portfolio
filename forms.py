@@ -49,7 +49,7 @@ class CreateToDo(FlaskForm):
     description = StringField("Description", validators=[DataRequired()])
     priority_id = SelectField("Priority", choices=[(0, "Normal"), (1, "Important"), (2, "Critical")])
     body = CKEditorField("Body", validators=[DataRequired()])
-    submit = SubmitField("Create To Do")
+    submit = SubmitField("Submit")
 
 
 class ContactForm(FlaskForm):

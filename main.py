@@ -77,7 +77,18 @@ class ToDo(db.Model):
     body = db.Column(db.Text, nullable=False)
     priority = db.Column(db.Integer, nullable=False)
     status = db.Column(db.Integer, nullable=False)
+    # project_id = db.Column(db.Integer, db.ForeignKey("todo_projects.id"))
+    # category = relationship("ToDoProject", back_populates="parent_todo_list")
     icon = db.Column(db.String(250), nullable=True)
+
+
+# class ToDoProject(db.Model):
+#     __tablename__ = "todo_projects"
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(250), nullable=False)
+#     description = db.Column(db.String(250), nullable=False)
+#     img_url = db.Column(db.String(250), nullable=True)
+#     parent_todo_list = db.relationship("ToDo", back_populates="project")
 
 
 class BlogPost(db.Model):
@@ -364,7 +375,6 @@ def edit_maxime(index):
 
 
 @app.route("/new-todo", methods=["POST", "GET"])
-@admin_only
 def add_todo():
     form = CreateToDo()
     if form.validate_on_submit():
@@ -383,12 +393,50 @@ def add_todo():
         db.session.add(new_todo)
         db.session.commit()
         return redirect(url_for("show_profile"))
-    return render_template("make-todo.html", form=form, title="New ToDo")
+    return render_template("make-todo.html", form=form, title="New Task")
+
+
+@app.route("/edit-todo/<int:index>", methods=["GET", "POST"])
+def edit_todo(index):
+    todo = ToDo.query.get(index)
+    edit_form = CreateToDo(
+        title=todo.title,
+        description=todo.description,
+        body=todo.body,
+        priority=todo.priority,
+    )
+    if edit_form.validate_on_submit():
+        todo.title = edit_form.title.data
+        todo.description = edit_form.description.data
+        todo.body = edit_form.body.data
+        todo.priority_id = edit_form.priority_id.data
+        db.session.commit()
+        return redirect(url_for("show_todo"))
+    return render_template("make-todo.html", form=edit_form, title="Edit Task")
 
 
 @app.route('/todo-list')
 def show_todo():
     return render_template("todo-list.html", title="To Do List", items=current_user.todo_items)
+
+
+@app.route("/delete-todo/<int:index>", methods=["GET", "POST"])
+def delete_todo(index):
+    todo = ToDo.query.get(index)
+    db.session.delete(todo)
+    db.session.commit()
+    return redirect(url_for("show_todo", items=current_user.todo_items))
+
+
+@app.route("/toggle-todo/<int:index>", methods=["GET", "POST"])
+def toggle_todo_status(index):
+    todo = ToDo.query.get(index)
+    if todo.status == 0:
+        todo.status = 1
+    else:
+        todo.status = 0
+    db.session.commit()
+    return redirect(url_for("show_todo", items=current_user.todo_items))
 
 
 @app.route("/contact", methods=["GET", "POST"])

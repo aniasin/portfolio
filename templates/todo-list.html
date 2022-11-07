@@ -34,7 +34,7 @@
       <hr>
     </div>
       <div class="accordion" id="accordion">
-        {% for item in items %}
+        {% for item in items if item.status == 1 %}
        <div class="container-fluid">
               <div class=row>
                 <div class="col-lg-2 text-center">
@@ -54,16 +54,56 @@
                       </div>
                   </div>
                   <div class="col-lg-4 text-left">
-                    <a class="btn btn-outline mt-3" href="" role="button"> Close Task</a>
-                    <a class="btn btn-outline mt-3" href="" role="button"> Edit Task</a>
-                    <a class="btn btn-outline mt-3" href="" role="button"> Delete Task</a>
+                    <a class="btn btn-outline mt-3" href="{{ url_for('toggle_todo_status', index=item.id) }}" role="button"> Close Task</a>
+                    <a class="btn btn-outline mt-3" href="{{ url_for('edit_todo', index=item.id) }}" role="button"> Edit Task</a>
+                    <a class="btn btn-outline mt-3" href="{{ url_for('delete_todo', index=item.id) }}" role="button"> Delete Task</a>
                 </div>
                   </div>
              </div>
               {% endfor %}
              </div>
-    <div class="spacer">
-      <hr>
+          <div class="spacer">
+            <hr>
+          </div>
+    <div class="container-fluid">
+        <div class=row>
+          <div class="col-lg-2 text-center">
+          </div>
+          <div class="col-lg-6 p-3">
+            <h1 >Closed Tasks</h1>
+          </div>
+        </div>
     </div>
+       <div class="accordion" id="accordion-closed">
+        {% for item in items if item.status == 0 %}
+       <div class="container-fluid">
+              <div class=row>
+                <div class="col-lg-2 text-center">
+                </div>
+                  <div class="col-lg-6 p-3">
+                      <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-closed{{ item.id }}">
+                          <button class="accordion-button accordion-list-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-closed{{ item.id }}" aria-expanded="true" aria-controls="collapse-closed{{ item.id }}">
+                            {{ item.icon | safe }} {{ item.title }}
+                          </button>
+                        </h2>
+                        <div id="collapse-closed{{ item.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ item.id }}" data-bs-parent="#accordion-closed">
+                          <div class="accordion-body">
+                            <strong>{{ item.description }}</strong> {{ item.body | safe }}
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                  <div class="col-lg-4 text-left">
+                    <a class="btn btn-outline mt-3" href="{{ url_for('toggle_todo_status', index=item.id) }}" role="button"> Open Task</a>
+                    <a class="btn btn-outline mt-3" href="{{ url_for('delete_todo', index=item.id) }}" role="button"> Delete Task</a>
+                </div>
+                  </div>
+             </div>
+              {% endfor %}
+          <div class="spacer">
+            <hr>
+          </div>
+       </div>
     </main>
 {% include "footer.html" %}
