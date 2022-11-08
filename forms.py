@@ -52,6 +52,13 @@ class CreateToDo(FlaskForm):
     submit = SubmitField("Submit")
 
 
+class CreateProject(FlaskForm):
+    name = StringField("project name", validators=[DataRequired()])
+    description = StringField("Description", validators=[DataRequired()])
+    img_url = StringField("Image URL")
+    submit = SubmitField("Submit")
+
+
 class ContactForm(FlaskForm):
     name = StringField("Enter your name...", validators=[DataRequired()])
     email = EmailField("Enter your email...", validators=[DataRequired()])

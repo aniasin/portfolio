@@ -19,7 +19,7 @@ from flask_login import UserMixin
 from sqlalchemy.orm import relationship
 
 from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm, CreateMaximeForm, CommentForm, \
-    ContactForm, CreateToDo
+    ContactForm, CreateToDo, CreateProject
 
 
 app = Flask(__name__)
@@ -53,6 +53,7 @@ class User(UserMixin, db.Model):
     # The "author" refers to the author property in the BlogPost class.
     posts = relationship("BlogPost", back_populates="author")
     comments = relationship("Comment", back_populates="author")
+    projects = relationship("ToDoProject", back_populates="author")
     todo_items = relationship("ToDo", back_populates="author")
 
 
@@ -77,18 +78,22 @@ class ToDo(db.Model):
     body = db.Column(db.Text, nullable=False)
     priority = db.Column(db.Integer, nullable=False)
     status = db.Column(db.Integer, nullable=False)
-    # project_id = db.Column(db.Integer, db.ForeignKey("todo_projects.id"))
-    # category = relationship("ToDoProject", back_populates="parent_todo_list")
+    project_id = db.Column(db.Integer, db.ForeignKey("todo_projects.id"))
+    project = relationship("ToDoProject", back_populates="parent_todo_list")
     icon = db.Column(db.String(250), nullable=True)
 
 
-# class ToDoProject(db.Model):
-#     __tablename__ = "todo_projects"
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(250), nullable=False)
-#     description = db.Column(db.String(250), nullable=False)
-#     img_url = db.Column(db.String(250), nullable=True)
-#     parent_todo_list = db.relationship("ToDo", back_populates="project")
+class ToDoProject(db.Model):
+    __tablename__ = "todo_projects"
+    id = db.Column(db.Integer, primary_key=True)
+    # Create Foreign Key, "users.id" the users refers to the table name of User.
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    # Create reference to the User object, the "posts" refers to the posts property in the User class.
+    author = relationship("User", back_populates="projects")
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    img_url = db.Column(db.String(250), nullable=True)
+    parent_todo_list = db.relationship("ToDo", back_populates="project")
 
 
 class BlogPost(db.Model):
@@ -374,8 +379,55 @@ def edit_maxime(index):
     return render_template("make-maxime.html", form=form, index=index, title="Edit Maxime")
 
 
-@app.route("/new-todo", methods=["POST", "GET"])
-def add_todo():
+@app.route('/projects')
+def show_projects():
+    return render_template("projects.html", title="Projects", items=current_user.projects)
+
+
+@app.route("/new-project", methods=["POST", "GET"])
+def add_project():
+    form = CreateProject()
+    if form.validate_on_submit():
+        new_project = ToDoProject(
+            name=form.name.data,
+            description=form.description.data,
+            img_url=form.img_url.data,
+            author=current_user,
+        )
+        db.session.add(new_project)
+        db.session.commit()
+        return redirect(url_for("show_projects"))
+    return render_template("make-project.html", form=form, title="New Project")
+
+
+@app.route("/new-project<int:index>", methods=["POST", "GET"])
+def edit_project(index):
+    project = ToDoProject.query.get(index)
+    form = CreateProject(
+        name=project.name,
+        description=project.description,
+        img_url=project.img_url
+    )
+    if form.validate_on_submit():
+        project.name = form.name.data
+        project.description = form.description.data
+        project.img_url = form.img_url.data
+        db.session.commit()
+        return redirect(url_for("show_projects"))
+    return render_template("make-project.html", form=form, title="Edit Project")
+
+
+@app.route("/delete-project/<int:index>", methods=["GET", "POST"])
+def delete_project(index):
+    project = ToDoProject.query.get(index)
+    db.session.delete(project)
+    db.session.commit()
+    return redirect(url_for("show_projects", items=current_user.projects))
+
+
+@app.route("/new-todo/<int:index>", methods=["POST", "GET"])
+def add_todo(index):
+    project = ToDoProject.query.get(index)
     form = CreateToDo()
     if form.validate_on_submit():
         icons = ['<i class="fa-solid fa-square-exclamation"></i>', '<i class="fa-solid fa-diamond-exclamation"></i>',
@@ -387,12 +439,13 @@ def add_todo():
             author=current_user,
             priority=form.priority_id.data,
             status=1,
+            project=project,
             icon=icons[int(form.priority_id.data)],
             date=date.today().strftime("%B %d, %Y")
         )
         db.session.add(new_todo)
         db.session.commit()
-        return redirect(url_for("show_profile"))
+        return redirect(url_for("show_todo", index=index))
     return render_template("make-todo.html", form=form, title="New Task")
 
 
@@ -411,13 +464,14 @@ def edit_todo(index):
         todo.body = edit_form.body.data
         todo.priority = edit_form.priority_id.data
         db.session.commit()
-        return redirect(url_for("show_todo"))
+        return redirect(url_for("show_todo", index=todo.project_id))
     return render_template("make-todo.html", form=edit_form, title="Edit Task")
 
 
-@app.route('/todo-list')
-def show_todo():
-    return render_template("todo-list.html", title="To Do List", items=current_user.todo_items)
+@app.route('/todo-list/<int:index>')
+def show_todo(index):
+    project = ToDoProject.query.get(index)
+    return render_template("todo-list.html", project=project)
 
 
 @app.route("/delete-todo/<int:index>", methods=["GET", "POST"])
@@ -425,7 +479,7 @@ def delete_todo(index):
     todo = ToDo.query.get(index)
     db.session.delete(todo)
     db.session.commit()
-    return redirect(url_for("show_todo", items=current_user.todo_items))
+    return redirect(url_for("show_todo", index=todo.project_id))
 
 
 @app.route("/toggle-todo/<int:index>", methods=["GET", "POST"])
@@ -436,7 +490,7 @@ def toggle_todo_status(index):
     else:
         todo.status = 0
     db.session.commit()
-    return redirect(url_for("show_todo", items=current_user.todo_items))
+    return redirect(url_for("show_todo", index=todo.project_id))
 
 
 @app.route("/contact", methods=["GET", "POST"])

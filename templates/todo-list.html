@@ -9,32 +9,42 @@
           <div class="col-lg-2 text-center">
               <div class="dropdown mt-3">
                 <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                   <i class="fa-solid fa-list menu-icon"></i> Switch Project
+                   <i class="fa-solid fa-list menu-icon"></i> Select Project
                 </button>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Action</a></li>
-                  <li><a class="dropdown-item" href="#">Another action</a></li>
-                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                  {% for project in current_user.projects %}
+                  <li><a class="dropdown-item" href="{{ url_for('show_todo', index=project.id) }}">{{ project.name }}</a></li>
+                  {% endfor %}
                 </ul>
               </div>
           </div>
           <div class="col-lg-6 p-3">
-            <h1 >Project Title</h1>
-            <p>Project Description</p>
+            <h1 >{{ project.name }}</h1>
+            <p>{{ project.description }}</p>
           </div>
             <div class="col-lg-4 text-left">
-                <a class="btn btn-outline mt-3" href="" role="button"> Close Project</a>
-                <a class="btn btn-outline mt-3" href="{{ url_for('add_todo') }}"> Add Task</a>
-                <a class="btn btn-outline mt-3" href=""> Edit Project</a>
-                <a class="btn btn-outline mt-3" href=""> Delete Project</a>
+                <a class="btn btn-outline mt-3" href="{{ url_for('add_todo', index=project.id) }}"> Add Task</a>
+                <a class="btn btn-outline mt-3" href="{{ url_for('edit_project', index=project.id) }}"> Edit Project</a>
+                <a class="btn btn-outline mt-3" href="{{ url_for('delete_project', index=project.id) }}"> Delete Project</a>
             </div>
         </div>
     </div>
     <div class="spacer">
       <hr>
     </div>
+          {% if project.parent_todo_list %}
+    <div class="container-fluid">
+        <div class=row>
+          <div class="col-lg-2 text-center">
+          </div>
+          <div class="col-lg-6 p-3">
+            <h1 >Current Tasks</h1>
+          </div>
+        </div>
+    </div>
+          {% endif %}
       <div class="accordion" id="accordion">
-        {% for item in items if item.status == 1 %}
+        {% for item in project.parent_todo_list if item.status == 1 %}
        <div class="container-fluid">
               <div class=row>
                 <div class="col-lg-2 text-center">
@@ -65,6 +75,7 @@
           <div class="spacer">
             <hr>
           </div>
+          {% if project.parent_todo_list %}
     <div class="container-fluid">
         <div class=row>
           <div class="col-lg-2 text-center">
@@ -74,8 +85,9 @@
           </div>
         </div>
     </div>
+          {% endif %}
        <div class="accordion" id="accordion-closed">
-        {% for item in items if item.status == 0 %}
+        {% for item in project.parent_todo_list if item.status == 0 %}
        <div class="container-fluid">
               <div class=row>
                 <div class="col-lg-2 text-center">
