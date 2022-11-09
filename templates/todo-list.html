@@ -12,6 +12,7 @@
                    <i class="fa-solid fa-list menu-icon"></i> Select Project
                 </button>
                 <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="{{ url_for('add_project') }}">Create Project</a></li>
                   {% for project in current_user.projects %}
                   <li><a class="dropdown-item" href="{{ url_for('show_todo', index=project.id) }}">{{ project.name }}</a></li>
                   {% endfor %}
@@ -25,7 +26,30 @@
             <div class="col-lg-4 text-left">
                 <a class="btn btn-outline mt-3" href="{{ url_for('add_todo', index=project.id) }}"> Add Task</a>
                 <a class="btn btn-outline mt-3" href="{{ url_for('edit_project', index=project.id) }}"> Edit Project</a>
-                <a class="btn btn-outline mt-3" href="{{ url_for('delete_project', index=project.id) }}"> Delete Project</a>
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-outline mt-3" data-bs-toggle="modal" data-bs-target="#modal-{{ project.id }}">
+                  Delete Project
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="modal-{{ project.id }}" tabindex="-1" aria-labelledby="modal-{{ project.id }}Label" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modal-{{ project.id }}Label">{{ project.name }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        This will permanently delete this project.
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Abort</button>
+                          <a href="{{ url_for('delete_project', index=project.id) }}"><button type="button" class="btn btn-success">Proceed</button></a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -48,6 +72,16 @@
        <div class="container-fluid">
               <div class=row>
                 <div class="col-lg-2 text-center">
+                    <div class="dropdown mt-3">
+                        <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Transfer
+                        </button>
+                        <ul class="dropdown-menu">
+                        {% for project in current_user.projects %}
+                            <li><a class="dropdown-item" href="{{ url_for('transfer_todo', todo_id=item.id, new_project_id=project.id) }}">{{ project.name }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    </div>
                 </div>
                   <div class="col-lg-6 p-3">
                       <div class="accordion-item">

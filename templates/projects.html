@@ -44,7 +44,29 @@
           </div>
             <div class="col-lg-4 text-left">
                 <a class="btn btn-outline mt-3" href="{{ url_for('edit_project', index=item.id) }}"> Edit Project</a>
-                <a class="btn btn-outline mt-3" href="{{ url_for('delete_project', index=item.id) }}"> Delete Project</a>
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-outline mt-3" data-bs-toggle="modal" data-bs-target="#modal-{{ item.id }}">
+                  Delete Project
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="modal-{{ item.id }}" tabindex="-1" aria-labelledby="modal-{{ item.id }}Label" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modal-{{ item.id }}Label">{{ item.name }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        This will permanently delete this project.
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Abort</button>
+                          <a href="{{ url_for('delete_project', index=item.id) }}"><button type="button" class="btn btn-success">Proceed</button></a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
             </div>
         </div>
      <div class="spacer">

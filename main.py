@@ -468,6 +468,16 @@ def edit_todo(index):
     return render_template("make-todo.html", form=edit_form, title="Edit Task")
 
 
+@app.route('/transfer_todo/<int:todo_id>/<int:new_project_id>', methods=["GET", "POST"])
+def transfer_todo(todo_id, new_project_id):
+    new_project = ToDoProject.query.get(new_project_id)
+    todo = ToDo.query.get(todo_id)
+    current_project_id = todo.project_id
+    todo.project = new_project
+    db.session.commit()
+    return redirect(url_for("show_todo", index=current_project_id))
+
+
 @app.route('/todo-list/<int:index>')
 def show_todo(index):
     project = ToDoProject.query.get(index)
