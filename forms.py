@@ -46,9 +46,9 @@ class CommentForm(FlaskForm):
 
 class CreateToDo(FlaskForm):
     title = StringField("ToDo Title", validators=[DataRequired()])
-    description = StringField("Description", validators=[DataRequired()])
+    description = StringField("Description")
     priority_id = SelectField("Priority", choices=[(0, "Normal"), (1, "Important"), (2, "Critical")])
-    body = CKEditorField("Body", validators=[DataRequired()])
+    body = CKEditorField("Body")
     submit = SubmitField("Submit")
 
 
