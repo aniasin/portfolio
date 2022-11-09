@@ -73,14 +73,13 @@ class ToDo(db.Model):
     author = relationship("User", back_populates="todo_items")
 
     title = db.Column(db.String(250), unique=True, nullable=False)
-    description = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=True)
     date = db.Column(db.String(250), nullable=False)
-    body = db.Column(db.Text, nullable=False)
+    body = db.Column(db.Text, nullable=True)
     priority = db.Column(db.Integer, nullable=False)
     status = db.Column(db.Integer, nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey("todo_projects.id"))
     project = relationship("ToDoProject", back_populates="parent_todo_list")
-    icon = db.Column(db.String(250), nullable=True)
 
 
 class ToDoProject(db.Model):
@@ -430,8 +429,6 @@ def add_todo(index):
     project = ToDoProject.query.get(index)
     form = CreateToDo()
     if form.validate_on_submit():
-        icons = ['<i class="fa-solid fa-square-exclamation"></i>', '<i class="fa-solid fa-diamond-exclamation"></i>',
-                 '<i class="fa-solid fa-triangle-exclamation"></i>']
         new_todo = ToDo(
             title=form.title.data,
             description=form.description.data,
@@ -440,7 +437,6 @@ def add_todo(index):
             priority=form.priority_id.data,
             status=1,
             project=project,
-            icon=icons[int(form.priority_id.data)],
             date=date.today().strftime("%B %d, %Y")
         )
         db.session.add(new_todo)
