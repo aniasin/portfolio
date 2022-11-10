@@ -159,6 +159,16 @@ def admin_only(f):
     return decorated_function
 
 
+def project_owner_only(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_projects = [project.id for project in current_user.projects]
+        if kwargs["project_id"] not in user_projects:
+            return abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -378,11 +388,6 @@ def edit_maxime(index):
     return render_template("make-maxime.html", form=form, index=index, title="Edit Maxime")
 
 
-@app.route('/projects')
-def show_projects():
-    return render_template("projects.html", title="Projects", items=current_user.projects)
-
-
 @app.route("/new-project", methods=["POST", "GET"])
 def add_project():
     form = CreateProject()
@@ -395,13 +400,14 @@ def add_project():
         )
         db.session.add(new_project)
         db.session.commit()
-        return redirect(url_for("show_projects"))
+        return redirect(url_for("show_todo", project_id=new_project.id))
     return render_template("make-project.html", form=form, title="New Project")
 
 
-@app.route("/new-project<int:index>", methods=["POST", "GET"])
-def edit_project(index):
-    project = ToDoProject.query.get(index)
+@app.route("/new-project/<int:project_id>", methods=["POST", "GET"])
+@project_owner_only
+def edit_project(project_id):
+    project = ToDoProject.query.get(project_id)
     form = CreateProject(
         name=project.name,
         description=project.description,
@@ -412,21 +418,23 @@ def edit_project(index):
         project.description = form.description.data
         project.img_url = form.img_url.data
         db.session.commit()
-        return redirect(url_for("show_projects"))
+        return redirect(url_for("show_todo", project_id=project.id))
     return render_template("make-project.html", form=form, title="Edit Project")
 
 
-@app.route("/delete-project/<int:index>", methods=["GET", "POST"])
-def delete_project(index):
-    project = ToDoProject.query.get(index)
+@app.route("/delete-project/<int:project_id>", methods=["GET", "POST"])
+@project_owner_only
+def delete_project(project_id):
+    project = ToDoProject.query.get(project_id)
     db.session.delete(project)
     db.session.commit()
-    return redirect(url_for("show_projects", items=current_user.projects))
+    return redirect(url_for("show_profile", items=current_user.projects))
 
 
-@app.route("/new-todo/<int:index>", methods=["POST", "GET"])
-def add_todo(index):
-    project = ToDoProject.query.get(index)
+@app.route("/new-todo/<int:project_id>", methods=["POST", "GET"])
+@project_owner_only
+def add_todo(project_id):
+    project = ToDoProject.query.get(project_id)
     form = CreateToDo()
     if form.validate_on_submit():
         new_todo = ToDo(
@@ -441,12 +449,13 @@ def add_todo(index):
         )
         db.session.add(new_todo)
         db.session.commit()
-        return redirect(url_for("show_todo", index=index))
+        return redirect(url_for("show_todo", project_id=project.id))
     return render_template("make-todo.html", form=form, title="New Task")
 
 
-@app.route("/edit-todo/<int:index>", methods=["GET", "POST"])
-def edit_todo(index):
+@app.route("/edit-todo/<int:index>/<int:project_id>", methods=["GET", "POST"])
+@project_owner_only
+def edit_todo(index, project_id):
     todo = ToDo.query.get(index)
     edit_form = CreateToDo(
         title=todo.title,
@@ -460,43 +469,47 @@ def edit_todo(index):
         todo.body = edit_form.body.data
         todo.priority = edit_form.priority_id.data
         db.session.commit()
-        return redirect(url_for("show_todo", index=todo.project_id))
+        return redirect(url_for("show_todo", project_id=todo.project_id))
     return render_template("make-todo.html", form=edit_form, title="Edit Task")
 
 
-@app.route('/transfer_todo/<int:todo_id>/<int:new_project_id>', methods=["GET", "POST"])
-def transfer_todo(todo_id, new_project_id):
+@app.route('/transfer_todo/<int:todo_id>/<int:new_project_id>/<int:project_id>', methods=["GET", "POST"])
+@project_owner_only
+def transfer_todo(todo_id, new_project_id, project_id):
     new_project = ToDoProject.query.get(new_project_id)
     todo = ToDo.query.get(todo_id)
     current_project_id = todo.project_id
     todo.project = new_project
     db.session.commit()
-    return redirect(url_for("show_todo", index=current_project_id))
+    return redirect(url_for("show_todo", project_id=current_project_id))
 
 
-@app.route('/todo-list/<int:index>')
-def show_todo(index):
-    project = ToDoProject.query.get(index)
+@app.route('/todo-list/<int:project_id>')
+@project_owner_only
+def show_todo(project_id):
+    project = ToDoProject.query.get(project_id)
     return render_template("todo-list.html", project=project)
 
 
-@app.route("/delete-todo/<int:index>", methods=["GET", "POST"])
-def delete_todo(index):
+@app.route("/delete-todo/<int:index>/<int:project_id>", methods=["GET", "POST"])
+@project_owner_only
+def delete_todo(index, project_id):
     todo = ToDo.query.get(index)
     db.session.delete(todo)
     db.session.commit()
-    return redirect(url_for("show_todo", index=todo.project_id))
+    return redirect(url_for("show_todo", project_id=todo.project_id))
 
 
-@app.route("/toggle-todo/<int:index>", methods=["GET", "POST"])
-def toggle_todo_status(index):
+@app.route("/toggle-todo/<int:index>/<int:project_id>", methods=["GET", "POST"])
+@project_owner_only
+def toggle_todo_status(index, project_id):
     todo = ToDo.query.get(index)
     if todo.status == 0:
         todo.status = 1
     else:
         todo.status = 0
     db.session.commit()
-    return redirect(url_for("show_todo", index=todo.project_id))
+    return redirect(url_for("show_todo", project_id=todo.project_id))
 
 
 @app.route("/contact", methods=["GET", "POST"])

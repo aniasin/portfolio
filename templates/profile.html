@@ -43,17 +43,16 @@
             <p>Create and view your projects</p>
           </div>
           <div class="col-lg-4">
-            <a class="btn btn-outline mt-5" href="{{ url_for('show_projects') }}"><i class="fa-solid fa-list menu-icon"></i> View Projects</a>
-            <a class="btn btn-outline mt-5" href="{{ url_for('add_project') }}"><i class="fa-solid fa-plus menu-icon"></i> Create Project</a>
-                <button class="btn btn-outline dropdown-toggle mt-5" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+               <button class="btn btn-outline dropdown-toggle mt-5" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                    <i class="fa-solid fa-list menu-icon"></i> Select Project
                 </button>
                 <ul class="dropdown-menu">
                   {% for project in current_user.projects %}
-                  <li><a class="dropdown-item" href="{{ url_for('show_todo', index=project.id) }}">{{ project.name }}</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('show_todo', project_id=project.id) }}">{{ project.name }}</a></li>
                   {% endfor %}
                 </ul>
-          </div>
+            <a class="btn btn-outline mt-5" href="{{ url_for('add_project') }}"><i class="fa-solid fa-plus menu-icon"></i> Create Project</a>
+           </div>
         </div>
       </div>
         <div class="spacer">
