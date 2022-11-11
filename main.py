@@ -109,6 +109,7 @@ class BlogPost(db.Model):
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=True)
+    header = db.Column(db.Boolean, nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey("blog_categories.id"))
     category = relationship("BlogCategory", back_populates="parent_posts")
     tags = db.relationship("Tag", secondary=tag_link, backref=db.backref('entries', lazy='dynamic'))
@@ -193,12 +194,8 @@ def inject_now():
 # -------- Routes ---------
 @app.route('/')
 def home():
-    header_posts = []
     last_post = db.session.query(BlogPost).order_by(BlogPost.id.desc()).first()
-    if last_post:
-        header_posts = [
-            category.parent_posts[0] for category in BlogCategory.query.all()
-            if category is not last_post.category and category.parent_posts]
+    header_posts = BlogPost.query.filter_by(header=True).order_by(BlogPost.id.desc()).all()
     return render_template("index.html", last_post=last_post, title="Welcome!", header_posts=header_posts)
 
 
@@ -259,12 +256,15 @@ def add_new_post():
     form = CreatePostForm()
     form.category.choices = categories
     if form.validate_on_submit():
+        if len(form.subtitle.data) > 249:
+            flash("Subtitle has too many characters !")
         new_post = BlogPost(
             title=form.title.data,
             subtitle=form.subtitle.data,
             body=form.body.data,
             img_url=form.img_url.data,
             author=current_user,
+            header=form.header.data,
             category_id=form.category.data,
             date=date.today().strftime("%B %d, %Y")
         )
@@ -308,6 +308,7 @@ def edit_post(index):
         tags=new_tags,
         category=post.category_id,
         author=post.author,
+        header=post.header,
         body=post.body
     )
     edit_form.category.choices = categories
@@ -317,6 +318,7 @@ def edit_post(index):
         post.img_url = edit_form.img_url.data
         post.category_id = edit_form.category.data
         post.body = edit_form.body.data
+        post.header = edit_form.header.data
         tags = edit_form.tags.data.split()
         post.tags = []
         for tag in tags:
@@ -330,6 +332,15 @@ def edit_post(index):
         db.session.commit()
         return redirect(url_for("show_post", post=post, index=post.id))
     return render_template("make-post.html", form=edit_form)
+
+
+@app.route("/delete-post/<int:index>", methods=["GET", "POST"])
+@admin_only
+def delete_post(index):
+    post = BlogPost.query.get(index)
+    db.session.delete(post)
+    db.session.commit()
+    return redirect(url_for("home"))
 
 
 @app.route("/make-category", methods=["POST", "GET"])
