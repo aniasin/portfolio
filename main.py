@@ -256,8 +256,6 @@ def add_new_post():
     form = CreatePostForm()
     form.category.choices = categories
     if form.validate_on_submit():
-        if len(form.subtitle.data) > 249:
-            flash("Subtitle has too many characters !")
         new_post = BlogPost(
             title=form.title.data,
             subtitle=form.subtitle.data,
@@ -401,6 +399,9 @@ def edit_maxime(index):
 
 @app.route("/new-project", methods=["POST", "GET"])
 def add_project():
+    projects_count = len(ToDoProject.query.filter_by(author=current_user).all())
+    if projects_count > 9:
+        return redirect(url_for("show_profile"))
     form = CreateProject()
     if form.validate_on_submit():
         new_project = ToDoProject(
@@ -499,7 +500,8 @@ def transfer_todo(todo_id, new_project_id, project_id):
 @project_owner_only
 def show_todo(project_id):
     project = ToDoProject.query.get(project_id)
-    return render_template("todo-list.html", project=project)
+    projects_count = len(ToDoProject.query.filter_by(author=current_user).all())
+    return render_template("todo-list.html", project=project, projects_count=projects_count)
 
 
 @app.route("/delete-todo/<int:index>/<int:project_id>", methods=["GET", "POST"])
@@ -578,7 +580,8 @@ def show_profile():
         flash("You must be logged in!")
         return redirect(url_for('login'))
     else:
-        return render_template("profile.html", user=current_user, title=current_user.name)
+        projects_count = len(ToDoProject.query.filter_by(author=current_user).all())
+        return render_template("profile.html", title=current_user.name, projects_count=projects_count)
 
 
 @app.route('/logout')

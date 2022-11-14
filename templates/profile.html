@@ -51,7 +51,9 @@
                   <li><a class="dropdown-item" href="{{ url_for('show_todo', project_id=project.id) }}">{{ project.name }}</a></li>
                   {% endfor %}
                 </ul>
+            {% if projects_count < 10 %}
             <a class="btn btn-outline mt-5" href="{{ url_for('add_project') }}"><i class="fa-solid fa-plus menu-icon"></i> Create Project</a>
+            {% endif %}
            </div>
         </div>
       </div>

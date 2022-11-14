@@ -12,7 +12,9 @@
                    <i class="fa-solid fa-list menu-icon"></i> Select Project
                 </button>
                 <ul class="dropdown-menu">
+                    {% if projects_count < 10 %}
                   <li><a class="dropdown-item" href="{{ url_for('add_project') }}">Create Project</a></li>
+                    {% endif %}
                   {% for project in current_user.projects %}
                   <li><a class="dropdown-item" href="{{ url_for('show_todo', project_id=project.id) }}">{{ project.name }}</a></li>
                   {% endfor %}
