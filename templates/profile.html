@@ -52,6 +52,7 @@
                   {% endfor %}
                 </ul>
             {% if projects_count < 10 %}
+<!--            # TODO: find a place to store as variable-->
             <a class="btn btn-outline mt-5" href="{{ url_for('add_project') }}"><i class="fa-solid fa-plus menu-icon"></i> Create Project</a>
             {% endif %}
            </div>

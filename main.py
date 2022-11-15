@@ -400,7 +400,7 @@ def edit_maxime(index):
 @app.route("/new-project", methods=["POST", "GET"])
 def add_project():
     projects_count = len(ToDoProject.query.filter_by(author=current_user).all())
-    if projects_count > 9:
+    if projects_count > 9:  # TODO: find a place to store as variable
         return redirect(url_for("show_profile"))
     form = CreateProject()
     if form.validate_on_submit():
@@ -489,6 +489,9 @@ def edit_todo(index, project_id):
 @project_owner_only
 def transfer_todo(todo_id, new_project_id, project_id):
     new_project = ToDoProject.query.get(new_project_id)
+    if len(new_project.parent_todo_list) > 99:  # TODO: find a place to store as variable
+        flash("Too many tasks in project")
+        return redirect(url_for("show_todo", project_id=project_id))
     todo = ToDo.query.get(todo_id)
     current_project_id = todo.project_id
     todo.project = new_project
@@ -501,7 +504,8 @@ def transfer_todo(todo_id, new_project_id, project_id):
 def show_todo(project_id):
     project = ToDoProject.query.get(project_id)
     projects_count = len(ToDoProject.query.filter_by(author=current_user).all())
-    return render_template("todo-list.html", project=project, projects_count=projects_count)
+    todo_count = len(project.parent_todo_list)
+    return render_template("todo-list.html", project=project, projects_count=projects_count, todo_count=todo_count)
 
 
 @app.route("/delete-todo/<int:index>/<int:project_id>", methods=["GET", "POST"])
