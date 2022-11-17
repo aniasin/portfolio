@@ -36,6 +36,10 @@ migrate = Migrate(app, db, compare_type=True)
 # Init login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
+# Captcha
+app.config['RECAPTCHA_USE_SSL'] = False
+app.config['RECAPTCHA_PUBLIC_KEY'] = os.environ.get("CAPTCHA_PRIVATE")
+app.config['RECAPTCHA_PRIVATE_KEY'] = os.environ.get("CAPTCHA_PUBLIC")
 
 gravatar = Gravatar(app, size=40, rating='x', default='retro', force_default=False, force_lower=False, use_ssl=False,
                     base_url=None)
