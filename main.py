@@ -17,6 +17,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import UserMixin
 from sqlalchemy.orm import relationship
+from gevent.pywsgi import WSGIServer
 
 from forms import RegisterForm, LoginForm, CreatePostForm, CreateCategoryForm, CreateMaximeForm, CommentForm, \
     ContactForm, CreateToDo, CreateProject
@@ -602,6 +603,6 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    app.run(debug=True)
-    # http_server = WSGIServer(('127.0.0.1', 5000), app)
-    # http_server.serve_forever()
+    # app.run(debug=True)
+    http_server = WSGIServer(('127.0.0.1', 5000), app)
+    http_server.serve_forever()
