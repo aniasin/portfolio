@@ -45,11 +45,11 @@ p{
   background-color: #06283d;
   outline-color: #06283d;
   color: #EB8632;
-  padding: 10px;
+
 }
 .btn-outline:hover{
   background-color: #256d85;
-    outline-color: #06283d;
+  outline-color: #06283d;
   color: #EBDE5D;
 }
 .menu, .navbar{

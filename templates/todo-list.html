@@ -25,6 +25,9 @@
           <div class="col-lg-6 p-3">
             <h1 >{{ project.name }}</h1>
             <p>{{ project.description }}</p>
+              {% if project.img_url != "" %}
+              <img class="img-fluid" src="{{ project.img_url }}" alt="Generic placeholder image">
+              {% endif %}
           </div>
             <div class="col-lg-4 text-left">
                 {% if todo_count < 100 %}
@@ -78,16 +81,6 @@
        <div class="container-fluid">
               <div class=row>
                 <div class="col-lg-2 text-center">
-                    <div class="dropdown mt-3">
-                        <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Transfer
-                        </button>
-                        <ul class="dropdown-menu">
-                        {% for new_project in current_user.projects %}
-                            <li><a class="dropdown-item" href="{{ url_for('transfer_todo', todo_id=item.id, new_project_id=new_project.id, project_id=project.id) }}">{{ new_project.name }}</a></li>
-                        {% endfor %}
-                        </ul>
-                    </div>
                 </div>
                   <div class="col-lg-6 p-3">
                       <div class="accordion-item">
@@ -103,13 +96,24 @@
                         </div>
                       </div>
                   </div>
-                  <div class="col-lg-4 text-left">
-                    <a class="btn btn-outline mt-3" href="{{ url_for('toggle_todo_status', index=item.id, project_id=project.id) }}" role="button"> Close Task</a>
-                    <a class="btn btn-outline mt-3" href="{{ url_for('edit_todo', index=item.id, project_id=project.id) }}" role="button"> Edit Task</a>
-                    <a class="btn btn-outline mt-3" href="{{ url_for('delete_todo', index=item.id, project_id=project.id) }}" role="button"> Delete Task</a>
-                </div>
+                  <div class="col-lg-4">
+                    <a class="btn btn-outline btn-sm mt-3" href="{{ url_for('toggle_todo_status', index=item.id, project_id=project.id) }}" role="button"> Close Task</a>
+                    <a class="btn btn-outline btn-sm mt-3" href="{{ url_for('edit_todo', index=item.id, project_id=project.id) }}" role="button"> Edit Task</a>
+                    <a class="btn btn-outline btn-sm mt-3" href="{{ url_for('delete_todo', index=item.id, project_id=project.id) }}" role="button"> Delete Task</a>
+                     <button class="btn btn-outline btn-sm dropdown-toggle mt-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Transfer
+                     </button>
+                      <ul class="dropdown-menu">
+                          {% for new_project in current_user.projects %}
+                          <li><a class="dropdown-item" href="{{ url_for('transfer_todo', todo_id=item.id, new_project_id=new_project.id, project_id=project.id) }}">{{ new_project.name }}</a></li>
+                          {% endfor %}
+                      </ul>
+                 </div>
                   </div>
              </div>
+          <div class="spacer">
+            <hr>
+          </div>
               {% endfor %}
              </div>
           <div class="spacer">
@@ -147,8 +151,8 @@
                       </div>
                   </div>
                   <div class="col-lg-4 text-left">
-                    <a class="btn btn-outline mt-3" href="{{ url_for('toggle_todo_status', index=item.id, project_id=project.id) }}" role="button"> Open Task</a>
-                    <a class="btn btn-outline mt-3" href="{{ url_for('delete_todo', index=item.id, project_id=project.id) }}" role="button"> Delete Task</a>
+                    <a class="btn btn-outline btn-sm mt-3" href="{{ url_for('toggle_todo_status', index=item.id, project_id=project.id) }}" role="button"> Open Task</a>
+                    <a class="btn btn-outline btn-sm mt-3" href="{{ url_for('delete_todo', index=item.id, project_id=project.id) }}" role="button"> Delete Task</a>
                 </div>
                   </div>
              </div>
