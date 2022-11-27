@@ -65,4 +65,5 @@ class ContactForm(FlaskForm):
     name = StringField("Enter your name...", validators=[DataRequired()])
     email = EmailField("Enter your email...", validators=[DataRequired()])
     message = CKEditorField("Message")
+    recaptcha = RecaptchaField()
     submit = SubmitField("Send")
